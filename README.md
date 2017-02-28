@@ -27,29 +27,24 @@ cd fhem-socket-tools
 ```
 <br>
 
-**4.** Install the plugin
-```bash
-./install.sh
-```
 
-
-**5.1.** SSL socket
+**4.1.** SSL socket
 ```bash
 ./sockssl IP Port Password "Command"
 ```
 
-**5.1.1.** SSL socket / Show verbose output
+**4.1.1.** SSL socket / Show verbose output
 ```bash
 ./sockssl IP Port Password "Command" 1
 ```
 
 
-**5.2.** Unsecured socket
+**4.2.** Unsecured socket
 ```bash
 ./socktool 127.0.0.1 Port Password "Command"
 ```
 
-**5.2.1.** Unsecured socket / Show verbose output
+**4.2.1.** Unsecured socket / Show verbose output
 ```bash
 ./socktool 127.0.0.1 Port Password "Command" 1
 ```
