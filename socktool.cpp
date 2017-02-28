@@ -83,7 +83,7 @@ int main ( int argc, char * argv [ ] )
 
 	while ( EstablishSocket ( sock, argv [ 1 ], port ) )
 	{
-		int len = 0;;
+		int len = 0; int bytesSent;
 
         if ( argc == 4 || (g_verbose && argc == 5) ) {
             len = strlen ( argv[3] );
@@ -103,6 +103,15 @@ int main ( int argc, char * argv [ ] )
             break;
         }
 
+        struct timeval tv;
+        tv.tv_sec	= 10;
+        tv.tv_usec	= 0;
+
+        len = setsockopt ( sock, SOL_SOCKET, SO_RCVTIMEO, ( const char * ) &tv, sizeof ( tv ) );
+        if ( len < 0 ) {
+            printf ( "Error: Failed to set socket timeout.\n" );
+        }
+
 		char buffer [ 128 ] = { };
         len = ::recv ( sock, buffer, 128, 0 );
 
@@ -111,7 +120,7 @@ int main ( int argc, char * argv [ ] )
                 if ( g_verbose ) printf ( "\nread: [ %i ] [ %s ]\n", len, buffer );
 
                 len = strlen ( argv[3] );
-                int bytesSent = ( int ) ::send ( sock, argv[3], len, MSG_NOSIGNAL );
+                bytesSent = ( int ) ::send ( sock, argv[3], len, MSG_NOSIGNAL );
                 if ( bytesSent != ( int ) len ) {
                     printf ( "Error: Failed to send password.\n" );
                     break;
@@ -121,21 +130,22 @@ int main ( int argc, char * argv [ ] )
                     printf ( "Error: Failed to send newline.\n" );
                     break;
                 }
-                len = strlen ( argv[4] );
-                bytesSent = ( int ) ::send ( sock, argv[4], len, MSG_NOSIGNAL );
-                if ( bytesSent != ( int ) len ) {
-		            printf ( "Error: Failed to send [ %s ].\n", argv [ 4 ] );
-                    break;
-                }
-                bytesSent = ( int ) ::send ( sock, "\n", 1, MSG_NOSIGNAL );
-                if ( bytesSent != 1 ) {
-                    printf ( "Error: Failed to send newline.\n" );
-                    break;
-                }
-                ret = 0;
                 break;
             }
         }
+
+        len = strlen ( argv[4] );
+        bytesSent = ( int ) ::send ( sock, argv[4], len, MSG_NOSIGNAL );
+        if ( bytesSent != ( int ) len ) {
+            printf ( "Error: Failed to send [ %s ].\n", argv [ 4 ] );
+            break;
+        }
+        bytesSent = ( int ) ::send ( sock, "\n", 1, MSG_NOSIGNAL );
+        if ( bytesSent != 1 ) {
+            printf ( "Error: Failed to send newline.\n" );
+            break;
+        }
+        ret = 0;
         break;
     }
 
