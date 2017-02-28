@@ -104,7 +104,7 @@ int main ( int argc, char * argv [ ] )
         }
 
         struct timeval tv;
-        tv.tv_sec	= 10;
+        tv.tv_sec	= 4;
         tv.tv_usec	= 0;
 
         len = setsockopt ( sock, SOL_SOCKET, SO_RCVTIMEO, ( const char * ) &tv, sizeof ( tv ) );
