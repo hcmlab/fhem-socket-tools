@@ -75,7 +75,6 @@ bool EstablishSSL ( SSL_CTX * &ctx, BIO * &web, BIO * &out, SSL * &ssl, const ch
 
 	SSL_CTX_set_verify_depth ( ctx, 4 );
 
-	//const long flags = SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_COMPRESSION;
 	const long flags = SSL_OP_NO_COMPRESSION;
 	SSL_CTX_set_options ( ctx, flags );
 
