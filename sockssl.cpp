@@ -104,8 +104,8 @@ bool EstablishSSL ( SSL_CTX * &ctx, BIO * &web, BIO * &out, SSL * &ssl, const ch
 		sslError ( "BIO_get_ssl", 0, web ); return false;
 	}
 
-	const char* const PREFERRED_CIPHERS = "HIGH:!aNULL:!kRSA:!PSK:!SRP:!MD5:!RC4";
-	res = SSL_set_cipher_list ( ssl, PREFERRED_CIPHERS );
+	const char* const ciphersList = "ALL";
+	res = SSL_set_cipher_list ( ssl, ciphersList );
 	if ( res != 1 ) {
 		sslError ( "SSL_set_cipher_list", res, 0 ); return false;
 	}
@@ -115,16 +115,19 @@ bool EstablishSSL ( SSL_CTX * &ctx, BIO * &web, BIO * &out, SSL * &ssl, const ch
 		sslError ( "SSL_set_tlsext_host_name", res, 0 ); return false;
 	}
 
+	if ( g_verbose ) printf ( "BIO_new_fp\n" );
 	out = BIO_new_fp ( stdout, BIO_NOCLOSE );
 	if ( !out ) {
 		sslError ( "BIO_new_fp", 0, 0 ); return false;
 	}
 
+	if ( g_verbose ) printf ( "BIO_do_connect\n" );
 	res = BIO_do_connect ( web );
 	if ( res != 1 ) {
 		sslError ( "BIO_do_connect", res, web ); return false;
 	}
 
+	if ( g_verbose ) printf ( "BIO_do_handshake\n" );
 	res = BIO_do_handshake ( web );
 	if ( res != 1 ) {
 		sslError ( "BIO_do_handshake", res, web ); return false;
@@ -174,6 +177,15 @@ int main ( int argc, char * argv [ ] )
 		return 1;
 	}
 
+	if ( argc >= 6 ) {
+		if ( *( argv [ 5 ] ) == '1' )
+			g_verbose = true;
+	}
+	else if ( argc >= 5 ) {
+		if ( *( argv [ 4 ] ) == '1' )
+			g_verbose = true;
+	}
+
 	( void ) SSL_library_init ();
 
 	SSL_load_error_strings ();
@@ -189,27 +201,28 @@ int main ( int argc, char * argv [ ] )
 	if ( EstablishSSL ( ctx, web, out, ssl, argv [ 1 ], port ) )
 	{
 		int len = 0; int reads = 0;
-		g_verbose = ( argc >= 6 && *(argv[5]) == '1' );
 		do
 		{
+			if ( argc == 4 || ( g_verbose && argc == 5 ) ) 
+			{
+				if ( BIO_puts ( web, argv [ 3 ] ) <= 0 ) {
+					printf ( "Error writing [ %s ]\n", argv [ 3 ] ); break;
+				}
+				if ( BIO_puts ( web, "\n" ) <= 0 ) {
+					printf ( "Error writing newline" ); break;
+				}
+				if ( g_verbose ) printf ( "[ %s ]\n", argv [ 3 ] );
+				ret = 0;
+				break;
+			}
+
+			if ( g_verbose ) printf ( "BIO_read\n" );
 			char buffer [ 2096 ] = { };
 			len = BIO_read ( web, buffer, sizeof ( buffer ) );
 			reads++;
 
 			if ( len > 0 ) {
 				if ( g_verbose ) BIO_write ( out, buffer, len );
-
-				if ( argc == 4 ) {
-					if ( BIO_puts ( web, argv[3] ) <= 0 ) {
-						printf ( "Error writing [ %s ]\n", argv[3] ); break;
-					}
-					if ( BIO_puts ( web, "\n" ) <= 0 ) {
-						printf ( "Error writing newline" ); break;
-					}
-					if ( g_verbose ) printf ( "[ %s ]\n", argv[ 3 ] );
-					ret = 0;
-					break;
-				}
 
 				if ( strstr ( buffer, "Password:" ) ) {
 					if ( g_verbose ) printf ( "\nread: [ %i / %i ] [ %s ]\n", reads, len, buffer );
