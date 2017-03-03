@@ -209,7 +209,10 @@ int main ( int argc, char * argv [ ] )
 					printf ( "Error writing [ %s ]\n", argv [ 3 ] ); break;
 				}
 				if ( BIO_puts ( web, "\n" ) <= 0 ) {
-					printf ( "Error writing newline" ); break;
+					printf ( "Error writing newline\n" ); break;
+				}
+				if ( BIO_flush ( web ) <= 0 ) {
+					printf ( "Error flushing buffer\n" );
 				}
 				if ( g_verbose ) printf ( "[ %s ]\n", argv [ 3 ] );
 				ret = 0;
@@ -230,7 +233,7 @@ int main ( int argc, char * argv [ ] )
 						printf ( "Error writing password\n" ); break;
 					}
 					if ( BIO_puts ( web, "\n" ) <= 0 ) {
-						printf ( "Error writing newline" ); break;
+						printf ( "Error writing newline\n" ); break;
 					}
 
 					if ( g_verbose ) printf ( "[ %s ]\n", argv[4] );
@@ -239,7 +242,10 @@ int main ( int argc, char * argv [ ] )
 						printf ( "Error writing [ %s ]\n", argv[4] ); break;
 					}
 					if ( BIO_puts ( web, "\n" ) <= 0 ) {
-						printf ( "Error writing newline" ); break;
+						printf ( "Error writing newline\n" ); break;
+					}
+					if ( BIO_flush ( web ) <= 0 ) {
+						printf ( "Error flushing buffer\n" );
 					}
 					ret = 0;
 					break;
