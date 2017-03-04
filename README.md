@@ -21,7 +21,7 @@ git clone https://hcm-lab.de/git/iot/fhem-socket-tools.git
 cd fhem-socket-tools
 ```
 
-**3.** Build the tools<br>
+**3.** (Not required) Build the tools<br>
 ```bash
 ./build.sh
 ```
