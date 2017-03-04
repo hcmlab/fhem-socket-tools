@@ -14,7 +14,8 @@
 */
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <netinet/tcp.h>
+#include <netinet/in.h>
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #if (SSLEAY_VERSION_NUMBER >= 0x0907000L)
@@ -131,6 +132,18 @@ bool EstablishSSL ( SSL_CTX * &ctx, BIO * &web, BIO * &out, SSL * &ssl, const ch
 	res = BIO_do_handshake ( web );
 	if ( res != 1 ) {
 		sslError ( "BIO_do_handshake", res, web ); return false;
+	}
+
+	res = BIO_get_fd ( web, 0 );
+	if ( res < 0 ) {
+		sslError ( "BIO_get_fd", res, web );
+	}
+	else {		
+		int value = 1;
+		int rc = setsockopt ( res, IPPROTO_TCP, TCP_NODELAY, ( const char * ) &value, sizeof ( value ) );
+		if ( rc < 0 ) {
+			sslError ( "setsockopt", rc, 0 );
+		}
 	}
 
 	/* Make sure that a server cert is available */
