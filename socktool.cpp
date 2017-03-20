@@ -26,6 +26,8 @@ bool g_verbose = false;
 
 bool EstablishSocket ( int & _sock, const char * host, int port )
 {
+    int rc;
+
     int sock = ( int ) socket ( PF_INET, SOCK_STREAM, 0 );
     if ( sock < 0 ) {
 		printf ( "Failed to create socket.\n" );
@@ -38,9 +40,9 @@ bool EstablishSocket ( int & _sock, const char * host, int port )
     tv.tv_sec	= 10;
     tv.tv_usec	= 0;
 
-    int rc = setsockopt ( sock, SOL_SOCKET, SO_RCVTIMEO, ( const char * ) &tv, sizeof ( tv ) );
+    rc = setsockopt ( sock, SOL_SOCKET, SO_RCVTIMEO, ( const char * ) &tv, sizeof ( tv ) );
     if ( rc < 0 ) {
-		printf ( "Failed to set receive timeout [ %i ].\n", rc );
+        printf ( "Failed to set receive timeout [ %i ].\n", rc );
     }
 
     tv.tv_sec	= 10;
@@ -48,7 +50,7 @@ bool EstablishSocket ( int & _sock, const char * host, int port )
 
     rc = setsockopt ( sock, SOL_SOCKET, SO_SNDTIMEO, ( const char * ) &tv, sizeof ( tv ) );
     if ( rc < 0 ) {
-		printf ( "Failed to set send timeout [ %i ].\n", rc );
+        printf ( "Failed to set send timeout [ %i ].\n", rc );
     }
 
     struct sockaddr_in  addr;
@@ -122,15 +124,6 @@ int main ( int argc, char * argv [ ] )
             break;
         }
 
-        struct timeval tv;
-        tv.tv_sec	= 4;
-        tv.tv_usec	= 0;
-
-        len = setsockopt ( sock, SOL_SOCKET, SO_RCVTIMEO, ( const char * ) &tv, sizeof ( tv ) );
-        if ( len < 0 ) {
-            printf ( "Error: Failed to set socket timeout.\n" );
-        }
-
 		char buffer [ 128 ] = { };
         len = ::recv ( sock, buffer, 128, 0 );
 
@@ -139,26 +132,35 @@ int main ( int argc, char * argv [ ] )
                 if ( g_verbose ) printf ( "\nread: [ %i ] [ %s ]\n", len, buffer );
 
                 len = strlen ( argv[3] );
+                if ( g_verbose ) printf ( "\nsend password of length: [ %i ]\n", len );
+
                 bytesSent = ( int ) ::send ( sock, argv[3], len, MSG_NOSIGNAL );
                 if ( bytesSent != ( int ) len ) {
                     printf ( "Error: Failed to send password.\n" );
                     break;
                 }
+
+                if ( g_verbose ) printf ( "\nsend newline.\n" );
                 bytesSent = ( int ) ::send ( sock, "\n", 1, MSG_NOSIGNAL );
                 if ( bytesSent != 1 ) {
                     printf ( "Error: Failed to send newline.\n" );
                     break;
                 }
-                break;
             }
         }
 
         len = strlen ( argv[4] );
+
+        if ( g_verbose ) printf ( "\nsend: [ %i ] [ %s ]\n", len, argv[4] );
+
         bytesSent = ( int ) ::send ( sock, argv[4], len, MSG_NOSIGNAL );
         if ( bytesSent != ( int ) len ) {
             printf ( "Error: Failed to send [ %s ].\n", argv [ 4 ] );
             break;
         }
+
+        if ( g_verbose ) printf ( "\nsend newline.\n" );
+
         bytesSent = ( int ) ::send ( sock, "\n", 1, MSG_NOSIGNAL );
         if ( bytesSent != 1 ) {
             printf ( "Error: Failed to send newline.\n" );
@@ -171,6 +173,7 @@ int main ( int argc, char * argv [ ] )
     if ( sock >= 0 ) {
         ::shutdown ( sock, 2 );
         ::close ( sock );
+        if ( g_verbose ) printf ( "\ndone.\n" );
     }
 
 	return ret;
