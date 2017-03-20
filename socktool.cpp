@@ -31,6 +31,25 @@ bool EstablishSocket ( int & _sock, const char * host, int port )
 		printf ( "Failed to create socket.\n" );
         return false;
     }
+    
+    struct timeval tv;
+    memset ( &tv, 0, sizeof(tv) );
+
+    tv.tv_sec	= 10;
+    tv.tv_usec	= 0;
+
+    int rc = setsockopt ( sock, SOL_SOCKET, SO_RCVTIMEO, ( const char * ) &tv, sizeof ( tv ) );
+    if ( rc < 0 ) {
+		printf ( "Failed to set receive timeout [ %i ].\n", rc );
+    }
+
+    tv.tv_sec	= 10;
+    tv.tv_usec	= 0;
+
+    rc = setsockopt ( sock, SOL_SOCKET, SO_SNDTIMEO, ( const char * ) &tv, sizeof ( tv ) );
+    if ( rc < 0 ) {
+		printf ( "Failed to set send timeout [ %i ].\n", rc );
+    }
 
     struct sockaddr_in  addr;
     memset ( &addr, 0, sizeof ( addr ) );
@@ -42,7 +61,7 @@ bool EstablishSocket ( int & _sock, const char * host, int port )
 
     if ( g_verbose ) printf ( "Connecting ...\n" );
 
-    int rc = ::connect ( sock, (struct sockaddr *) & addr, sizeof ( struct sockaddr_in ) );
+    rc = ::connect ( sock, (struct sockaddr *) & addr, sizeof ( struct sockaddr_in ) );
     if ( rc < 0 ) {
 		printf ( "Failed to connect [ %s : %i ].\n", host, port );
         ::shutdown ( sock, 2 );
