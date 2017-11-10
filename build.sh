@@ -15,7 +15,7 @@ gcc -o socktool socktool.cpp
 
 echo 'Build of socktool was successful.'
 
-gcc -lssl -lcrypto -o sockssl sockssl.cpp
+gcc -o sockssl sockssl.cpp -lssl -lcrypto
 [ $? != 0 ] && echo 'Failed to build sockssl ...' && exit 1
 
 echo 'Build of sockssl was successful.'
