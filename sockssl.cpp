@@ -21,6 +21,7 @@
 #if (SSLEAY_VERSION_NUMBER >= 0x0907000L)
 #	include <openssl/conf.h>
 #endif
+include <cstring>
 
 bool g_verbose = false;
 
